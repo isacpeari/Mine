@@ -1,0 +1,10 @@
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\AlienHack YiSharp.exe.config
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\AlienHack YiSharp.exe
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\AlienHack YiSharp.pdb
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\LeagueSharp.Common.dll
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\LeagueSharp.dll
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\SharpDX.dll
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\SharpDX.Direct3D9.dll
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\bin\Release\LeagueSharp.xml
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\obj\Debug\AlienHack YiSharp.exe
+C:\Users\XenoCoreZ\Desktop\L# Scripts\LeagueSharp\LeagueSharp.git\trunk\AlienHack YiSharp\AlienHack YiSharp\obj\Debug\AlienHack YiSharp.pdb
