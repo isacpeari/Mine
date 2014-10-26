@@ -31,69 +31,89 @@ namespace AlienHack_YiSharp
 
         private static void OnGameLoad(EventArgs args)
         {
-            Name = Player.ChampionName;
-            if (Name != "MasterYi") return;
+                Name = Player.ChampionName;
+                if (Name != "MasterYi") return;
 
-            var qData = Player.Spellbook.GetSpell(SpellSlot.Q);
-            var wData = Player.Spellbook.GetSpell(SpellSlot.W);
-            var eData = Player.Spellbook.GetSpell(SpellSlot.E);
-            var rData = Player.Spellbook.GetSpell(SpellSlot.R);
+                var qData = Player.Spellbook.GetSpell(SpellSlot.Q);
+                var wData = Player.Spellbook.GetSpell(SpellSlot.W);
+                var eData = Player.Spellbook.GetSpell(SpellSlot.E);
+                var rData = Player.Spellbook.GetSpell(SpellSlot.R);
 
-            Q = new Spell(SpellSlot.Q, 600);
-            W = new Spell(SpellSlot.W, 175);
-            E = new Spell(SpellSlot.E, 175);
-            R = new Spell(SpellSlot.R, 175);
+                Q = new Spell(SpellSlot.Q, 600);
+                W = new Spell(SpellSlot.W, 175);
+                E = new Spell(SpellSlot.E, 175);
+                R = new Spell(SpellSlot.R, 175);
 
-            IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
-            Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
+                IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
+                Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
 
-            //Orbwalker submenu
-            Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking"));
+                //Orbwalker submenu
+                Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking")); //OLD ORB WALKER
 
-            //Add the target selector to the menu as submenu.
-            var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-            SimpleTs.AddToMenu(targetSelectorMenu);
-            Config.AddSubMenu(targetSelectorMenu);
+                //Add the target selector to the menu as submenu.
+                var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
+                SimpleTs.AddToMenu(targetSelectorMenu);
+                Config.AddSubMenu(targetSelectorMenu);
 
-            //Load the orbwalker and add it to the menu as submenu.
-            Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
+                //Load the orbwalker and add it to the menu as submenu.
+                Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking")); //OLD ORB WALKER
 
-            //LaneClear
-            Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("LaneClearActive", "LaneClear!").SetValue(new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
+                //LaneClear
+                Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
+                Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
+                Config.SubMenu("LaneClear")
+                    .AddItem(
+                        new MenuItem("LaneClearActive", "LaneClear!").SetValue(
+                            new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-            //Harass menu:
-            Config.AddSubMenu(new Menu("Harass", "Harass"));
-            Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
-            Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
-            Config.SubMenu("Harass").AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
+                //Harass menu:
+                Config.AddSubMenu(new Menu("Harass", "Harass"));
+                Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
+                Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
+                Config.SubMenu("Harass")
+                    .AddItem(
+                        new MenuItem("HarassActive", "Harass!").SetValue(
+                            new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-            //Combo menu:
-            Config.AddSubMenu(new Menu("Combo", "Combo"));
-            //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
-            Config.SubMenu("Combo").AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
-            Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
-            Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
-            Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
-            Config.SubMenu("Combo").AddItem(new MenuItem("ComboActive", "Combo!").SetValue(new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
+                //Combo menu:
+                Config.AddSubMenu(new Menu("Combo", "Combo"));
+                //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
+                Config.SubMenu("Combo")
+                    .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
+                Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
+                Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
+                Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
+                Config.SubMenu("Combo")
+                    .AddItem(
+                        new MenuItem("ComboActive", "Combo!").SetValue(
+                            new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-            Config.AddSubMenu(new Menu("Misc", "Misc"));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
+                Config.AddSubMenu(new Menu("Misc", "Misc"));
+                Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
+                Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
+                Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
+                Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
+                Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
 
-            Config.AddToMainMenu();
-            // End Menu
+                Config.AddToMainMenu();
+                // End Menu
 
-            Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
-            Game.OnGameUpdate += Game_OnGameUpdate;
+                Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
+                Game.OnGameUpdate += Game_OnGameUpdate;
+
         }
 
         private static int getQRange()
         {
             return Config.Item("MinQRange").GetValue<Slider>().Value;
+        }
+        private static bool IsQSteal()
+        {
+            if (Config.Item("AutoQSteal").GetValue<bool>() == true)
+            {
+                return Q.IsReady();
+            }
+            return false;
         }
         private static bool IsTiamat()
         {
@@ -197,15 +217,6 @@ namespace AlienHack_YiSharp
         }
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
-
-            if (IsIgnite() && Player.Distance(target) < 600)
-            {
-                if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
-                {
-                    Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
-                }
-            }
 
             //LaneClear
             if (Config.Item("LaneClearActive").GetValue<KeyBind>().Active)
@@ -225,8 +236,32 @@ namespace AlienHack_YiSharp
                 DoCombo();
             }
 
-            
+            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+            //Find All Minion
+            var allMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
+                MinionTypes.All, MinionTeam.NotAlly);
+            var jungleMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Neutral);
+            allMinions.AddRange(jungleMinions);
 
+            //Auto Ignite
+            if (IsIgnite() && Player.Distance(target) < 600)
+            {
+                if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
+                {
+                    Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                }
+            }
+
+            //AutoQ
+            if (IsQSteal() && Player.Distance(target) < Q.Range)
+            {
+                if (Player.GetSpellDamage(target, SpellSlot.Q) > target.Health)
+                {
+                    Q.Cast(target);
+                }
+            }
+
+            //AUTO DODGE
 
         }
         private static void DoCombo()
@@ -234,7 +269,7 @@ namespace AlienHack_YiSharp
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
-            if (IsQCombo() && getQRange() > Player.Distance(target))
+            if (IsQCombo() && Player.Distance(target) > getQRange())
             {
                 Q.Cast(target);
             }
@@ -318,6 +353,7 @@ namespace AlienHack_YiSharp
         }
         private static void DoLaneClear()
         {
+            
             //Find All Minion
             var allMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
                 MinionTypes.All, MinionTeam.NotAlly);
