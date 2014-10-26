@@ -21,7 +21,6 @@ namespace AlienHack_YiSharp
         public static Items.Item Youmuu = new Items.Item(3142, 200);
         public static Menu Config;
         public static String Name;
-
         private static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += OnGameLoad;
@@ -42,14 +41,14 @@ namespace AlienHack_YiSharp
             E = new Spell(SpellSlot.E, 175);
             R = new Spell(SpellSlot.R, 175);
 
-            Config = new Menu("AlienHack_" + Name, "AlienHack_" + Name, true);
+            Config = new Menu("YiSharp", "YiSharp", true);
 
             //Orbwalker submenu
-            var orbwalkerMenu = new Menu("My Orbwalker", "my_Orbwalker");
-            LXOrbwalker.AddToMenu(orbwalkerMenu);
-            Config.AddSubMenu(orbwalkerMenu);
+            var orbwalkerMenu = new Menu("Orbwalker", "LX_Orbwalker");
             
-         
+            Config.AddSubMenu(orbwalkerMenu);
+            LXOrbwalker.AddToMenu(orbwalkerMenu);
+
             //Add the target selector to the menu as submenu.
             var targetSelectorMenu = new Menu("Target Selector", "TargetSelector");
             SimpleTs.AddToMenu(targetSelectorMenu);
