@@ -215,6 +215,33 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
+        static void ks()
+        {
+            var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
+            nearChamps.OrderBy(x => x.Health);
+
+
+            foreach (var target in nearChamps)
+            {
+                //ignite
+                if (target != null && IsIgnite() && Player.Distance(target.ServerPosition) <= 600)
+                {
+                    if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
+                    {
+                        Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                        break;
+                    }
+                }
+
+                if (Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health && IsQSteal())
+                {
+                    Q.Cast(target);
+                    break;
+                }
+            }
+
+
+        }
         private static void Game_OnGameUpdate(EventArgs args)
         {
 
@@ -257,23 +284,7 @@ namespace AlienHack_YiSharp
             allMinions.AddRange(jungleMinions);
 
             //Auto Ignite
-            if (IsIgnite() && Player.Distance(target) <= 600)
-            {
-                if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
-                {
-                    Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
-                }
-            }
-
-            //AutoQ
-            if (IsQSteal() && Player.Distance(target) <= Q.Range)
-            {
-                if (Player.GetSpellDamage(target, SpellSlot.Q) > target.Health)
-                {
-                    Q.Cast(target);
-                }
-            }
-
+            ks();
             //AUTO DODGE
 
         }
