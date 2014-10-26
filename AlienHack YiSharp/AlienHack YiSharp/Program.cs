@@ -218,7 +218,20 @@ namespace AlienHack_YiSharp
         private static void Game_OnGameUpdate(EventArgs args)
         {
 
-            //LaneClear
+            switch (Orbwalker.ActiveMode)
+            {
+                case Orbwalking.OrbwalkingMode.LaneClear:
+                    DoLaneClear();
+                    break;
+                case Orbwalking.OrbwalkingMode.Mixed:
+                    DoHarass();
+                    break;
+                case Orbwalking.OrbwalkingMode.Combo:
+                    DoCombo();
+                    break;
+            }
+
+            /*//LaneClear
             if (Config.Item("LaneClearActive").GetValue<KeyBind>().Active)
             {
                 DoLaneClear();
@@ -234,7 +247,7 @@ namespace AlienHack_YiSharp
             if (Config.Item("ComboActive").GetValue<KeyBind>().Active)
             {
                 DoCombo();
-            }
+            }*/
 
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             //Find All Minion
