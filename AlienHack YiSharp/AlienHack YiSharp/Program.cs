@@ -244,7 +244,7 @@ namespace AlienHack_YiSharp
             allMinions.AddRange(jungleMinions);
 
             //Auto Ignite
-            if (IsIgnite() && Player.Distance(target) < 600)
+            if (IsIgnite() && Player.Distance(target) <= 600)
             {
                 if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
                 {
@@ -253,7 +253,7 @@ namespace AlienHack_YiSharp
             }
 
             //AutoQ
-            if (IsQSteal() && Player.Distance(target) < Q.Range)
+            if (IsQSteal() && Player.Distance(target) <= Q.Range)
             {
                 if (Player.GetSpellDamage(target, SpellSlot.Q) > target.Health)
                 {
@@ -269,45 +269,45 @@ namespace AlienHack_YiSharp
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
-            if (IsQCombo() && Player.Distance(target) > getQRange())
+            if (IsQCombo() && Player.Distance(target) >= getQRange())
             {
                 Q.Cast(target);
             }
 
-            if (IsECombo() && E.Range > Player.Distance(target))
+            if (IsECombo() && E.Range >= Player.Distance(target))
             {
                 E.Cast();
             }
 
-            if (IsRCombo() && R.Range > Player.Distance(target))
+            if (IsRCombo() && R.Range >= Player.Distance(target))
             {
                 R.Cast();
             }
 
-            if (IsTiamat() && Tiamat.Range > Player.Distance(target))
+            if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
             {
                 Tiamat.Cast();
             }
 
-            if (IsHydra() && Hydra.Range > Player.Distance(target))
+            if (IsHydra() && Hydra.Range >= Player.Distance(target))
             {
                 Hydra.Cast();
             }
 
-            if (IsBOTRK() && BladeOfRuinKing.Range > Player.Distance(target))
+            if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
-                if (Player.Health < Player.MaxHealth - target.MaxHealth * 0.1)
+                if (Player.Health <= Player.MaxHealth - target.MaxHealth * 0.1)
                 {
                     BladeOfRuinKing.Cast(target);
                 }
             }
 
-            if (IsBilge() && BlidgeWater.Range > Player.Distance(target))
+            if (IsBilge() && BlidgeWater.Range >= Player.Distance(target))
             {
                 BlidgeWater.Cast(target);
             }
 
-            if (IsYoumuu() && Youmuu.Range > Player.Distance(target))
+            if (IsYoumuu() && Youmuu.Range >= Player.Distance(target))
             {
                 Youmuu.Cast();
             }
@@ -317,22 +317,22 @@ namespace AlienHack_YiSharp
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
-            if (IsQHarass() && Q.Range > Player.Distance(target))
+            if (IsQHarass() && Q.Range >= Player.Distance(target))
             {
                 Q.Cast(target);
             }
 
-            if (IsEHarass() && E.Range > Player.Distance(target))
+            if (IsEHarass() && E.Range >= Player.Distance(target))
             {
                 E.Cast();
             }
 
-            if (IsTiamat() && Tiamat.Range > Player.Distance(target))
+            if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
             {
                 Tiamat.Cast();
             }
 
-            if (IsHydra() && Hydra.Range > Player.Distance(target))
+            if (IsHydra() && Hydra.Range >= Player.Distance(target))
             {
                 Hydra.Cast();
             }
@@ -363,7 +363,7 @@ namespace AlienHack_YiSharp
             //Auto Q
             if (IsQLaneClear() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Q.Range > Player.Distance(minion)).OrderBy(minion => Player.Distance(minion)))
+                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Q.Range >= Player.Distance(minion)).OrderBy(minion => Player.Distance(minion)))
                 {
                     Q.Cast(minion);
                     break;
@@ -373,7 +373,7 @@ namespace AlienHack_YiSharp
             //Auto Tiamat
             if (IsTiamat() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Tiamat.Range > Player.Distance(minion)))
+                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Tiamat.Range >= Player.Distance(minion)))
                 {
                     Tiamat.Cast();
                     break;
@@ -383,7 +383,7 @@ namespace AlienHack_YiSharp
             //Auto Hydra
             if (IsHydra() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Hydra.Range > Player.Distance(minion)))
+                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Hydra.Range >= Player.Distance(minion)))
                 {
                     Hydra.Cast();
                     break;
