@@ -103,8 +103,7 @@ namespace AlienHack_YiSharp
             foreach (var target in nearChamps)
             {
                 //ignite
-                if (target != null && Config.Item("useIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
-                                Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready && Player.Distance(target.ServerPosition) <= 600)
+                if (target != null && IsIgnite() && Player.Distance(target.ServerPosition) <= 600)
                 {
                     if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
                     {
@@ -112,7 +111,7 @@ namespace AlienHack_YiSharp
                     }
                 }
 
-                if (target != null && Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health)
+                if (Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health)
                 {
                     if (Q.IsReady())
                     {
