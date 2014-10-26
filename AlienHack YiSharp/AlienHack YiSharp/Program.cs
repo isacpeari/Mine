@@ -10,6 +10,7 @@ namespace AlienHack_YiSharp
     internal class Program
     {
         public static Orbwalking.Orbwalker Orbwalker;
+
         public static Spell Q, W, E, R;
         public static List<Spell> SpellList = new List<Spell>();
         public static Obj_AI_Hero Player = ObjectManager.Player, TargetObj = null;
@@ -33,27 +34,22 @@ namespace AlienHack_YiSharp
             Name = Player.ChampionName;
             if (Name != "MasterYi") return;
 
-            SpellDataInst qData = Player.Spellbook.GetSpell(SpellSlot.Q);
-            SpellDataInst wData = Player.Spellbook.GetSpell(SpellSlot.W);
-            SpellDataInst eData = Player.Spellbook.GetSpell(SpellSlot.E);
-            SpellDataInst rData = Player.Spellbook.GetSpell(SpellSlot.R);
-
             Q = new Spell(SpellSlot.Q, 600);
             W = new Spell(SpellSlot.W, 175);
             E = new Spell(SpellSlot.E, 175);
             R = new Spell(SpellSlot.R, 175);
-
+            SpellList.Add(Q);
+            SpellList.Add(W);
+            SpellList.Add(E);
+            SpellList.Add(R);
             IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
+
             Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
 
-            //Orbwalker submenu
-            //Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking")); //OLD ORB WALKER
-            //Load the orbwalker and add it to the menu as submenu.
-            //Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking")); //OLD ORB WALKER
-
-            var orbWalkerZ = new Menu("OrbWalker", "OrbWalker");
-            LXOrbwalker.AddToMenu(orbWalkerZ);
-            Config.AddSubMenu(orbWalkerZ);
+            //Lxorbwalker
+            var orbwalkerMenu = new Menu("Orbwalker", "LX_Orbwalker");
+            LXOrbwalker.AddToMenu(orbwalkerMenu);
+            Config.AddSubMenu(orbwalkerMenu);
 
             //Add the target selector to the menu as submenu.
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
@@ -64,19 +60,12 @@ namespace AlienHack_YiSharp
             //LaneClear
             Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
             Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
-            Config.SubMenu("LaneClear")
-                .AddItem(
-                    new MenuItem("LaneClearActive", "LaneClear!").SetValue(
-                        new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
+
 
             //Harass menu:
             Config.AddSubMenu(new Menu("Harass", "Harass"));
             Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
             Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
-            Config.SubMenu("Harass")
-                .AddItem(
-                    new MenuItem("HarassActive", "Harass!").SetValue(
-                        new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
             //Combo menu:
             Config.AddSubMenu(new Menu("Combo", "Combo"));
@@ -86,11 +75,8 @@ namespace AlienHack_YiSharp
             Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
-            Config.SubMenu("Combo")
-                .AddItem(
-                    new MenuItem("ComboActive", "Combo!").SetValue(
-                        new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
+            //Misc
             Config.AddSubMenu(new Menu("Misc", "Misc"));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
@@ -103,7 +89,43 @@ namespace AlienHack_YiSharp
 
             Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
+
         }
+
+        static void Ks()
+        {
+
+
+            var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
+            nearChamps.OrderBy(x => x.Health);
+
+
+            foreach (var target in nearChamps)
+            {
+                //ignite
+                if (target != null && Config.Item("useIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
+                                Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready && Player.Distance(target.ServerPosition) <= 600)
+                {
+                    if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
+                    {
+                        Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                    }
+                }
+
+                if (target != null && Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health)
+                {
+                    if (Q.IsReady())
+                    {
+                        Q.Cast(target);
+                        return;
+                    }
+                }
+
+            }
+
+
+        }
+
 
         private static int getQRange()
         {
@@ -231,49 +253,8 @@ namespace AlienHack_YiSharp
             return false;
         }
 
-        private static void ks()
-        {
-            List<Obj_AI_Hero> nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>()
-                where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy
-                select champ).ToList();
-            nearChamps.OrderBy(x => x.Health);
-
-
-            foreach (Obj_AI_Hero target in nearChamps)
-            {
-                //ignite
-                if (target != null && IsIgnite() && Player.Distance(target.ServerPosition) <= 600)
-                {
-                    if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
-                    {
-                        Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
-                        break;
-                    }
-                }
-
-                if (Player.Distance(target.ServerPosition) <= Q.Range &&
-                    (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health && IsQSteal())
-                {
-                    Q.Cast(target);
-                    break;
-                }
-            }
-        }
-
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            /*switch (Orbwalker.ActiveMode)
-            {
-                case Orbwalking.OrbwalkingMode.LaneClear:
-                    DoLaneClear();
-                    break;
-                case Orbwalking.OrbwalkingMode.Mixed:
-                    DoHarass();
-                    break;
-                case Orbwalking.OrbwalkingMode.Combo:
-                    DoCombo();
-                    break;
-            }*/
 
             switch (LXOrbwalker.CurrentMode)
             {
@@ -288,9 +269,7 @@ namespace AlienHack_YiSharp
                     break;
             }
 
-            //Auto Ignite
-            ks();
-            //AUTO DODGE
+            Ks();
         }
 
         private static void DoCombo()
@@ -325,7 +304,7 @@ namespace AlienHack_YiSharp
 
             if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
-                if (Player.Health <= Player.MaxHealth - target.MaxHealth*0.1)
+                if (Player.Health <= Player.MaxHealth - target.MaxHealth * 0.1)
                 {
                     BladeOfRuinKing.Cast(target);
                 }
@@ -367,19 +346,6 @@ namespace AlienHack_YiSharp
                 Hydra.Cast();
             }
 
-            //SHOULD BE ON COMBO MODE
-            /*if (IsBOTRK() && BladeOfRuinKing.Range > Player.Distance(target))
-            {
-                if (Player.Health < Player.MaxHealth - target.MaxHealth * 0.1)
-                {
-                    BladeOfRuinKing.Cast(target);
-                }
-            }
-
-            if (IsYoumuu() && Youmuu.Range > Player.Distance(target))
-            {
-                Youmuu.Cast();
-            }*/
         }
 
         private static void DoLaneClear()
