@@ -44,8 +44,7 @@ namespace AlienHack_YiSharp
             E = new Spell(SpellSlot.E, 175);
             R = new Spell(SpellSlot.R, 175);
 
-            IgniteSlot = ObjectManager.Player.GetSpellSlot("SummonerDot");
-
+            IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
             Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
 
             //Orbwalker submenu
@@ -72,6 +71,8 @@ namespace AlienHack_YiSharp
 
             //Combo menu:
             Config.AddSubMenu(new Menu("Combo", "Combo"));
+            //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
+            Config.SubMenu("Combo").AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
@@ -90,6 +91,10 @@ namespace AlienHack_YiSharp
             Game.OnGameUpdate += Game_OnGameUpdate;
         }
 
+        private static int getQRange()
+        {
+            return Config.Item("MinQRange").GetValue<Slider>().Value;
+        }
         private static bool IsTiamat()
         {
             if (Config.Item("AutoTiamat").GetValue<bool>() == true)
@@ -104,6 +109,7 @@ namespace AlienHack_YiSharp
             {
                     if (Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                     {
+                        //Game.PrintChat("Ignite Enabled");
                         return true;
                 }
             }
@@ -149,7 +155,6 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static bool IsQHarass()
         {
             if (Config.Item("UseQHarass").GetValue<bool>() == true)
@@ -158,7 +163,6 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static bool IsEHarass()
         {
             if (Config.Item("UseEHarass").GetValue<bool>() == true)
@@ -167,7 +171,6 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static bool IsQCombo()
         {
             if (Config.Item("UseQCombo").GetValue<bool>() == true)
@@ -176,7 +179,6 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static bool IsECombo()
         {
             if (Config.Item("UseECombo").GetValue<bool>() == true)
@@ -185,7 +187,6 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static bool IsRCombo()
         {
             if (Config.Item("UseRCombo").GetValue<bool>() == true)
@@ -194,9 +195,18 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
-
         private static void Game_OnGameUpdate(EventArgs args)
         {
+            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+
+            if (IsIgnite() && Player.Distance(target) < 600)
+            {
+                if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
+                {
+                    Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                }
+            }
+
             //LaneClear
             if (Config.Item("LaneClearActive").GetValue<KeyBind>().Active)
             {
@@ -214,14 +224,17 @@ namespace AlienHack_YiSharp
             {
                 DoCombo();
             }
-        }
 
+            
+
+
+        }
         private static void DoCombo()
         {
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
-            if (IsQCombo() && Q.Range > Player.Distance(target))
+            if (IsQCombo() && getQRange() > Player.Distance(target))
             {
                 Q.Cast(target);
             }
@@ -263,16 +276,7 @@ namespace AlienHack_YiSharp
             {
                 Youmuu.Cast();
             }
-
-            if (IsIgnite() && 600 > Player.Distance(target))
-            {
-                if (Player.GetSpellDamage(target, IgniteSlot) > target.Health)
-                {
-                    Player.SummonerSpellbook.CastSpell(IgniteSlot, target);
-                }
-            }
         }
-
         private static void DoHarass()
         {
             var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
@@ -312,7 +316,6 @@ namespace AlienHack_YiSharp
                 Youmuu.Cast();
             }*/
         }
-
         private static void DoLaneClear()
         {
             //Find All Minion
