@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
+using LX_Orbwalker;
 
 namespace AlienHack_YiSharp
 {
-    class Program
+    internal class Program
     {
         public static Orbwalking.Orbwalker Orbwalker;
         public static Spell Q, W, E, R;
@@ -16,212 +15,231 @@ namespace AlienHack_YiSharp
         public static Obj_AI_Hero Player = ObjectManager.Player, TargetObj = null;
         public static SpellSlot IgniteSlot;
         public static Items.Item Tiamat = new Items.Item(3077, 375);
-        public static Items.Item Hydra = new Items.Item(3074, 375); 
+        public static Items.Item Hydra = new Items.Item(3074, 375);
         public static Items.Item BladeOfRuinKing = new Items.Item(3153, 450);
         public static Items.Item BlidgeWater = new Items.Item(3144, 450);
-        public static Items.Item Youmuu = new Items.Item(3142,200);
+        public static Items.Item Youmuu = new Items.Item(3142, 200);
         public static Menu Config;
         public static String Name;
-        
 
-        static void Main(string[] args)
+
+        private static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += OnGameLoad;
         }
 
         private static void OnGameLoad(EventArgs args)
         {
-                Name = Player.ChampionName;
-                if (Name != "MasterYi") return;
+            Name = Player.ChampionName;
+            if (Name != "MasterYi") return;
 
-                var qData = Player.Spellbook.GetSpell(SpellSlot.Q);
-                var wData = Player.Spellbook.GetSpell(SpellSlot.W);
-                var eData = Player.Spellbook.GetSpell(SpellSlot.E);
-                var rData = Player.Spellbook.GetSpell(SpellSlot.R);
+            SpellDataInst qData = Player.Spellbook.GetSpell(SpellSlot.Q);
+            SpellDataInst wData = Player.Spellbook.GetSpell(SpellSlot.W);
+            SpellDataInst eData = Player.Spellbook.GetSpell(SpellSlot.E);
+            SpellDataInst rData = Player.Spellbook.GetSpell(SpellSlot.R);
 
-                Q = new Spell(SpellSlot.Q, 600);
-                W = new Spell(SpellSlot.W, 175);
-                E = new Spell(SpellSlot.E, 175);
-                R = new Spell(SpellSlot.R, 175);
+            Q = new Spell(SpellSlot.Q, 600);
+            W = new Spell(SpellSlot.W, 175);
+            E = new Spell(SpellSlot.E, 175);
+            R = new Spell(SpellSlot.R, 175);
 
-                IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
-                Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
+            IgniteSlot = ObjectManager.Player.GetSpellSlot("summonerdot");
+            Config = new Menu("AlienHack [" + Name + "]", "AlienHack_" + Name, true);
 
-                //Orbwalker submenu
-                Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking")); //OLD ORB WALKER
+            //Orbwalker submenu
+            //Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking")); //OLD ORB WALKER
+            //Load the orbwalker and add it to the menu as submenu.
+            //Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking")); //OLD ORB WALKER
 
-                //Add the target selector to the menu as submenu.
-                var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
-                SimpleTs.AddToMenu(targetSelectorMenu);
-                Config.AddSubMenu(targetSelectorMenu);
+            var orbWalkerZ = new Menu("OrbWalker", "OrbWalker");
+            LXOrbwalker.AddToMenu(orbWalkerZ);
+            Config.AddSubMenu(orbWalkerZ);
 
-                //Load the orbwalker and add it to the menu as submenu.
-                Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking")); //OLD ORB WALKER
+            //Add the target selector to the menu as submenu.
+            var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
+            SimpleTs.AddToMenu(targetSelectorMenu);
+            Config.AddSubMenu(targetSelectorMenu);
 
-                //LaneClear
-                Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
-                Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
-                Config.SubMenu("LaneClear")
-                    .AddItem(
-                        new MenuItem("LaneClearActive", "LaneClear!").SetValue(
-                            new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-                //Harass menu:
-                Config.AddSubMenu(new Menu("Harass", "Harass"));
-                Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
-                Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
-                Config.SubMenu("Harass")
-                    .AddItem(
-                        new MenuItem("HarassActive", "Harass!").SetValue(
-                            new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
+            //LaneClear
+            Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
+            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
+            Config.SubMenu("LaneClear")
+                .AddItem(
+                    new MenuItem("LaneClearActive", "LaneClear!").SetValue(
+                        new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-                //Combo menu:
-                Config.AddSubMenu(new Menu("Combo", "Combo"));
-                //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
-                Config.SubMenu("Combo")
-                    .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
-                Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
-                Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
-                Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
-                Config.SubMenu("Combo")
-                    .AddItem(
-                        new MenuItem("ComboActive", "Combo!").SetValue(
-                            new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
+            //Harass menu:
+            Config.AddSubMenu(new Menu("Harass", "Harass"));
+            Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
+            Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
+            Config.SubMenu("Harass")
+                .AddItem(
+                    new MenuItem("HarassActive", "Harass!").SetValue(
+                        new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-                Config.AddSubMenu(new Menu("Misc", "Misc"));
-                Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
-                Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
-                Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
-                Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
-                Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
+            //Combo menu:
+            Config.AddSubMenu(new Menu("Combo", "Combo"));
+            //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
+            Config.SubMenu("Combo")
+                .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
+            Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
+            Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
+            Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
+            Config.SubMenu("Combo")
+                .AddItem(
+                    new MenuItem("ComboActive", "Combo!").SetValue(
+                        new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
-                Config.AddToMainMenu();
-                // End Menu
+            Config.AddSubMenu(new Menu("Misc", "Misc"));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
 
-                Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
-                Game.OnGameUpdate += Game_OnGameUpdate;
+            Config.AddToMainMenu();
+            // End Menu
 
+            Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
+            Game.OnGameUpdate += Game_OnGameUpdate;
         }
 
         private static int getQRange()
         {
             return Config.Item("MinQRange").GetValue<Slider>().Value;
         }
+
         private static bool IsQSteal()
         {
-            if (Config.Item("AutoQSteal").GetValue<bool>() == true)
+            if (Config.Item("AutoQSteal").GetValue<bool>())
             {
                 return Q.IsReady();
             }
             return false;
         }
+
         private static bool IsTiamat()
         {
-            if (Config.Item("AutoTiamat").GetValue<bool>() == true)
+            if (Config.Item("AutoTiamat").GetValue<bool>())
             {
                 return Tiamat.IsReady();
             }
             return false;
         }
+
         private static bool IsIgnite()
         {
-            if (Config.Item("AutoIgnite").GetValue<bool>() == true)
+            if (Config.Item("AutoIgnite").GetValue<bool>())
             {
-                    if (Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
-                    {
-                        //Game.PrintChat("Ignite Enabled");
-                        return true;
+                if (Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+                {
+                    //Game.PrintChat("Ignite Enabled");
+                    return true;
                 }
             }
             return false;
         }
+
         private static bool IsHydra()
         {
-            if (Config.Item("AutoTiamat").GetValue<bool>() == true)
+            if (Config.Item("AutoTiamat").GetValue<bool>())
             {
                 return Hydra.IsReady();
             }
             return false;
         }
+
         private static bool IsBOTRK()
         {
-            if (Config.Item("AutoBOTRK").GetValue<bool>() == true)
+            if (Config.Item("AutoBOTRK").GetValue<bool>())
             {
                 return BladeOfRuinKing.IsReady();
             }
             return false;
         }
+
         private static bool IsBilge()
         {
-            if (Config.Item("AutoBOTRK").GetValue<bool>() == true)
+            if (Config.Item("AutoBOTRK").GetValue<bool>())
             {
                 return BlidgeWater.IsReady();
             }
             return false;
         }
+
         private static bool IsYoumuu()
         {
-            if (Config.Item("AutoYoumuu").GetValue<bool>() == true)
+            if (Config.Item("AutoYoumuu").GetValue<bool>())
             {
                 return Youmuu.IsReady();
             }
             return false;
         }
+
         private static bool IsQLaneClear()
         {
-            if (Config.Item("UseQLaneClear").GetValue<bool>() == true)
+            if (Config.Item("UseQLaneClear").GetValue<bool>())
             {
                 return Q.IsReady();
             }
             return false;
         }
+
         private static bool IsQHarass()
         {
-            if (Config.Item("UseQHarass").GetValue<bool>() == true)
+            if (Config.Item("UseQHarass").GetValue<bool>())
             {
                 return Q.IsReady();
             }
             return false;
         }
+
         private static bool IsEHarass()
         {
-            if (Config.Item("UseEHarass").GetValue<bool>() == true)
+            if (Config.Item("UseEHarass").GetValue<bool>())
             {
                 return E.IsReady();
             }
             return false;
         }
+
         private static bool IsQCombo()
         {
-            if (Config.Item("UseQCombo").GetValue<bool>() == true)
+            if (Config.Item("UseQCombo").GetValue<bool>())
             {
                 return Q.IsReady();
             }
             return false;
         }
+
         private static bool IsECombo()
         {
-            if (Config.Item("UseECombo").GetValue<bool>() == true)
+            if (Config.Item("UseECombo").GetValue<bool>())
             {
                 return E.IsReady();
             }
             return false;
         }
+
         private static bool IsRCombo()
         {
-            if (Config.Item("UseRCombo").GetValue<bool>() == true)
+            if (Config.Item("UseRCombo").GetValue<bool>())
             {
                 return R.IsReady();
             }
             return false;
         }
-        static void ks()
+
+        private static void ks()
         {
-            var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
+            List<Obj_AI_Hero> nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>()
+                where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy
+                select champ).ToList();
             nearChamps.OrderBy(x => x.Health);
 
 
-            foreach (var target in nearChamps)
+            foreach (Obj_AI_Hero target in nearChamps)
             {
                 //ignite
                 if (target != null && IsIgnite() && Player.Distance(target.ServerPosition) <= 600)
@@ -233,19 +251,18 @@ namespace AlienHack_YiSharp
                     }
                 }
 
-                if (Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health && IsQSteal())
+                if (Player.Distance(target.ServerPosition) <= Q.Range &&
+                    (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health && IsQSteal())
                 {
                     Q.Cast(target);
                     break;
                 }
             }
-
-
         }
+
         private static void Game_OnGameUpdate(EventArgs args)
         {
-
-            switch (Orbwalker.ActiveMode)
+            /*switch (Orbwalker.ActiveMode)
             {
                 case Orbwalking.OrbwalkingMode.LaneClear:
                     DoLaneClear();
@@ -256,41 +273,29 @@ namespace AlienHack_YiSharp
                 case Orbwalking.OrbwalkingMode.Combo:
                     DoCombo();
                     break;
-            }
-
-            /*//LaneClear
-            if (Config.Item("LaneClearActive").GetValue<KeyBind>().Active)
-            {
-                DoLaneClear();
-            }
-
-            //Harass
-            if (Config.Item("HarassActive").GetValue<KeyBind>().Active)
-            {
-                DoHarass();
-            }
-
-            //Combo
-            if (Config.Item("ComboActive").GetValue<KeyBind>().Active)
-            {
-                DoCombo();
             }*/
 
-            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
-            //Find All Minion
-            var allMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
-                MinionTypes.All, MinionTeam.NotAlly);
-            var jungleMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Neutral);
-            allMinions.AddRange(jungleMinions);
+            switch (LXOrbwalker.CurrentMode)
+            {
+                case LXOrbwalker.Mode.LaneClear:
+                    DoLaneClear();
+                    break;
+                case LXOrbwalker.Mode.Harass:
+                    DoHarass();
+                    break;
+                case LXOrbwalker.Mode.Combo:
+                    DoCombo();
+                    break;
+            }
 
             //Auto Ignite
             ks();
             //AUTO DODGE
-
         }
+
         private static void DoCombo()
         {
-            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+            Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
             if (IsQCombo() && Player.Distance(target) >= getQRange())
@@ -320,7 +325,7 @@ namespace AlienHack_YiSharp
 
             if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
-                if (Player.Health <= Player.MaxHealth - target.MaxHealth * 0.1)
+                if (Player.Health <= Player.MaxHealth - target.MaxHealth*0.1)
                 {
                     BladeOfRuinKing.Cast(target);
                 }
@@ -336,9 +341,10 @@ namespace AlienHack_YiSharp
                 Youmuu.Cast();
             }
         }
+
         private static void DoHarass()
         {
-            var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+            Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
             if (IsQHarass() && Q.Range >= Player.Distance(target))
@@ -375,19 +381,24 @@ namespace AlienHack_YiSharp
                 Youmuu.Cast();
             }*/
         }
+
         private static void DoLaneClear()
         {
-            
             //Find All Minion
-            var allMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
+            List<Obj_AI_Base> allMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range,
                 MinionTypes.All, MinionTeam.NotAlly);
-            var jungleMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Neutral);
+            List<Obj_AI_Base> jungleMinions = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All,
+                MinionTeam.Neutral);
             allMinions.AddRange(jungleMinions);
 
             //Auto Q
             if (IsQLaneClear() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Q.Range >= Player.Distance(minion)).OrderBy(minion => Player.Distance(minion)))
+                foreach (
+                    Obj_AI_Base minion in
+                        allMinions.Where(minion => minion.IsValidTarget())
+                            .Where(minion => Q.Range >= Player.Distance(minion))
+                            .OrderBy(minion => Player.Distance(minion)))
                 {
                     Q.Cast(minion);
                     break;
@@ -397,17 +408,23 @@ namespace AlienHack_YiSharp
             //Auto Tiamat
             if (IsTiamat() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Tiamat.Range >= Player.Distance(minion)))
+                foreach (
+                    Obj_AI_Base minion in
+                        allMinions.Where(minion => minion.IsValidTarget())
+                            .Where(minion => Tiamat.Range >= Player.Distance(minion)))
                 {
                     Tiamat.Cast();
                     break;
-                } 
+                }
             }
 
             //Auto Hydra
             if (IsHydra() && allMinions.Count > 0)
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()).Where(minion => Hydra.Range >= Player.Distance(minion)))
+                foreach (
+                    Obj_AI_Base minion in
+                        allMinions.Where(minion => minion.IsValidTarget())
+                            .Where(minion => Hydra.Range >= Player.Distance(minion)))
                 {
                     Hydra.Cast();
                     break;
