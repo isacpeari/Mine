@@ -1,28 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using LeagueSharp;
 using LeagueSharp.Common;
+using LX_Orbwalker;
 using SharpDX;
 
 namespace AlienHack_XinSharp
 {
-    class Program
+    internal class Program
     {
-        private static Menu Config;
+        public static Menu Config;
 
-        public static Orbwalking.Orbwalker Orbwalker;
         public static Spell QSpell;
         public static Spell WSpell;
         public static Spell ESpell;
         public static Spell RSpell;
-        public static List<Spell> SpellList = new List<Spell>();
         public static Obj_AI_Hero Player = ObjectManager.Player;
-        public static SpellSlot IgniteSlot; //= ObjectManager.Player.GetSpellSlot("SummonerDot");
-        public static Items.Item Tiamat = new Items.Item(3077,400);
-        public static Items.Item Hydra = new Items.Item(3074, 400);
+        public static SpellDataInst smiteSlot;
+        public static SpellSlot igniteSlot;
+        public static Int32 lastSkinId = 0;
+        public static Items.Item tiamat, hydra, blade, bilge, rand, lotis;
 
         static void Main(string[] args)
         {
@@ -31,208 +29,389 @@ namespace AlienHack_XinSharp
 
         static void Game_OnGameLoad(EventArgs args)
         {
-            if (ObjectManager.Player.ChampionName != "Xin Zhao") return;
+            //if (ObjectManager.Player.ChampionName != "XinZhao") return;
 
             //Spells
-            QSpell = new Spell(SpellSlot.Q ,375f);
+            QSpell = new Spell(SpellSlot.Q, 375);
+            WSpell = new Spell(SpellSlot.W, 20);
+            ESpell = new Spell(SpellSlot.E, 650);
+            RSpell = new Spell(SpellSlot.R, 500);
+            smiteSlot = Player.SummonerSpellbook.GetSpell(Player.GetSpellSlot("summonersmite"));
+            igniteSlot = Player.GetSpellSlot("SummonerDot");
 
-            WSpell = new Spell(SpellSlot.W, 375f);
-            
-            ESpell = new Spell(SpellSlot.E, 600f);
-            //ESpell.SetTargetted();
+            bilge = new Items.Item(3144, 475f);
+            blade = new Items.Item(3153, 425f);
+            hydra = new Items.Item(3074, 375f);
+            tiamat = new Items.Item(3077, 375f);
+            rand = new Items.Item(3143, 490f);
+            lotis = new Items.Item(3190, 590f);
 
-            RSpell = new Spell(SpellSlot.R, 375f);
 
-            SpellList.Add(QSpell);
-            SpellList.Add(WSpell);
-            SpellList.Add(ESpell);
-            SpellList.Add(RSpell);
-            
             //Make the menu
             Config = new Menu("XinSharp", "The Dragon Talon", true);
 
-            //Orbwalker submenu
-            Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking"));
 
-            //Add the target selector to the menu as submenu.
+
+            //Orbwalker submenu            
+
+
+            //Lxorbwalker
+            var orbwalkerMenu = new Menu("Orbwalker", "LX_Orbwalker");
+            LXOrbwalker.AddToMenu(orbwalkerMenu);
+            Config.AddSubMenu(orbwalkerMenu);
+
+            //Add the targer selector to the menu.
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
             SimpleTs.AddToMenu(targetSelectorMenu);
             Config.AddSubMenu(targetSelectorMenu);
 
-            //Load the orbwalker and add it to the menu as submenu.
-            Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
-
-            //LaneClear
-            Config.AddSubMenu(new Menu("LaneClear", "LaneClear"));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(false));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseWLaneClear", "Use W").SetValue(false));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseELaneClear", "Use E").SetValue(false));
-            Config.SubMenu("LaneClear").AddItem(new MenuItem("LaneClearActive", "LaneClear!").SetValue(new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
-
-            //Harass menu:
-            Config.AddSubMenu(new Menu("Harass", "Harass"));
-            Config.SubMenu("Harass").AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
-            Config.SubMenu("Harass").AddItem(new MenuItem("UseWHarass", "Use W").SetValue(false));
-            Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
-            Config.SubMenu("Harass").AddItem(new MenuItem("HarassActive", "Harass!").SetValue(new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
-
-            //Combo menu:
+            //Combo menu
             Config.AddSubMenu(new Menu("Combo", "Combo"));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseWCombo", "Use W").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
-            Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
-            Config.SubMenu("Combo").AddItem(new MenuItem("ComboActive", "Combo!").SetValue(new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
+            Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R Kill Secured").SetValue(true));
 
+            //LaneClear menu
+            Config.AddSubMenu(new Menu("LaneClear/Jungle Clear", "LaneClear"));
+            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
+            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseWLaneClear", "Use W").SetValue(true));
+            Config.SubMenu("LaneClear").AddItem(new MenuItem("UseELaneClear", "Use E").SetValue(true));
+
+            //Misc Menu
             Config.AddSubMenu(new Menu("Misc", "Misc"));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("packet", "Use Packets").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("useEKS", "Use E KS").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("useRIn", "Use R Interrupt").SetValue(true));
+
+
+            //Items public static Int32 Tiamat = 3077, Hydra = 3074, Blade = 3153, Bilge = 3144, Rand = 3143, lotis = 3190;
+            Config.AddSubMenu(new Menu("items", "items"));
+            Config.SubMenu("items").AddSubMenu(new Menu("Offensive", "Offensive"));
+            Config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Tiamat", "Use Tiamat")).SetValue(true);
+            Config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Hydra", "Use Hydra")).SetValue(true);
+            Config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Bilge", "Use Bilge")).SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BilgeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            Config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Bilgemyhp", "Or your Hp < ").SetValue(new Slider(85, 1, 100)));
+            Config.SubMenu("items").SubMenu("Offensive").AddItem(new MenuItem("Blade", "Use Blade")).SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("BladeEnemyhp", "If Enemy Hp <").SetValue(new Slider(85, 1, 100)));
+            Config.SubMenu("items")
+                .SubMenu("Offensive")
+                .AddItem(new MenuItem("Blademyhp", "Or Your  Hp <").SetValue(new Slider(85, 1, 100)));
+            Config.SubMenu("items").AddSubMenu(new Menu("Deffensive", "Deffensive"));
+            Config.SubMenu("items")
+                .SubMenu("Deffensive")
+                .AddItem(new MenuItem("Omen", "Use Randuin Omen"))
+                .SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Deffensive")
+                .AddItem(new MenuItem("Omenenemys", "Randuin if enemys>").SetValue(new Slider(2, 1, 5)));
+            Config.SubMenu("items")
+                .SubMenu("Deffensive")
+                .AddItem(new MenuItem("lotis", "Use Iron Solari"))
+                .SetValue(true);
+            Config.SubMenu("items")
+                .SubMenu("Deffensive")
+                .AddItem(new MenuItem("lotisminhp", "Solari if Ally Hp<").SetValue(new Slider(35, 1, 100)));
+              
+
+            //SummonerSpell Menu
+            Config.AddSubMenu(new Menu("SummonerSpell", "SummonerSpell"));
+            Config.SubMenu("SummonerSpell").AddItem(new MenuItem("usesmite", "Use Smite(Toggle)").SetValue(new KeyBind("N".ToCharArray()[0],
+        KeyBindType.Toggle)));
+            Config.SubMenu("SummonerSpell").AddItem(new MenuItem("useIgnite", "use Ignite KS").SetValue(true));
+           
+            //Skin Changer
+            Config.AddSubMenu(new Menu("Skin Changer", "SkinChanger"));
+            Config.SubMenu("SkinChanger").AddItem(new MenuItem("skin", "Use Custom Skin").SetValue(true));
+            Config.SubMenu("SkinChanger").AddItem(new MenuItem("skin1", "Skin Changer").SetValue(new Slider(0, 0, 5)));
+
+
+
+            //DrawEmenu
+            Config.AddSubMenu(new Menu("Draw", "DrawSettings"));
+            Config.SubMenu("DrawSettings").AddItem(new MenuItem("DrawE", "E Range").SetValue(true));
+            Config.SubMenu("DrawSettings").AddItem(new MenuItem("DrawR", "R Range").SetValue(true));
+
+           // Activator.addmenu(Config);
 
             Config.AddToMainMenu();
             // end menu
 
-            var ignite = Player.Spellbook.GetSpell(Player.GetSpellSlot("SummonerDot"));
-            IgniteSlot = ignite.Slot;
+            if (Config.Item("skin").GetValue<bool>())
+            {
+                Packet.S2C.UpdateModel.Encoded(new Packet.S2C.UpdateModel.Struct(Player.NetworkId, Config.Item("skin1").GetValue<Slider>().Value, Player.ChampionName)).Process();
+                lastSkinId = Config.Item("skin1").GetValue<Slider>().Value;
+            }
 
             Game.PrintChat("AlienHack [XinSharp - The Dragon Talon] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
-            //Drawing.OnDraw += Drawing_OnDraw;
+            Drawing.OnDraw += Drawing_OnDraw;
+            Interrupter.OnPossibleToInterrupt += OnPossibleToInterrupt;
+            LXOrbwalker.AfterAttack += AfterAttack;
+        }
+
+        static void AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        {
+            if ( QSpell.IsReady() && LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo) 
+            {
+                QSpell.Cast(); 
+            }
+        }
+
+        public static bool packets()
+        {
+            return Config.Item("packet").GetValue<bool>();
         }
 
         static void Drawing_OnDraw(EventArgs args)
         {
-            foreach (var spell in SpellList)
-            {
-                var menuItem = Config.Item(spell.Slot + "Range").GetValue<Circle>();
+            if (Player.IsDead) return;
+            if (Config.Item("DrawE").GetValue<bool>() && ESpell.Level > 0) Utility.DrawCircle(Player.Position, ESpell.Range, System.Drawing.Color.Red);
+            if (Config.Item("DrawR").GetValue<bool>() && RSpell.Level > 0) Utility.DrawCircle(Player.Position, RSpell.Range, System.Drawing.Color.Red);
+        }
 
-                if (menuItem.Active)
-                    Utility.DrawCircle(ObjectManager.Player.Position, spell.Range, menuItem.Color);
-            }
+        static void OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
+        {
+            if (!Config.Item("useRIn").GetValue<bool>()) return;
+            if (RSpell.IsReady() && unit.IsValidTarget(RSpell.Range))
+                RSpell.Cast();
         }
 
         static void Game_OnGameUpdate(EventArgs args)
         {
-            //LaneClear
-            if (Config.Item("LaneClearActive").GetValue<KeyBind>().Active)
+
+
+            //LXorbwalk
+
+            if (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.LaneClear)
             {
-                DoLaneClear();
+                LaneClear();
+            }
+            if (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo)
+            {
+                Combo();
             }
 
-            //Harass
-            if (Config.Item("HarassActive").GetValue<KeyBind>().Active)
-            {
-                DoHarass();
-            }
+            ks();
+            
 
-            //Combo
-            if (Config.Item("ComboActive").GetValue<KeyBind>().Active)
+            if (Config.Item("skin").GetValue<bool>() && Config.Item("skin1").GetValue<Slider>().Value != lastSkinId)
+                {
+                    Packet.S2C.UpdateModel.Encoded(new Packet.S2C.UpdateModel.Struct(Player.NetworkId, Config.Item("skin1").GetValue<Slider>().Value, Player.ChampionName)).Process();
+                    lastSkinId = Config.Item("skin1").GetValue<Slider>().Value;
+                }
+
+            if (Config.Item("usesmite").GetValue<KeyBind>().Active)
             {
-                DoCombo();
+                Smite();
             }
 
         }
+
+        private static int getSmiteDmg()
+        {
+            int level = Player.Level;
+            int index = Player.Level / 5;
+            float[] dmgs = { 370 + 20 * level, 330 + 30 * level, 240 + 40 * level, 100 + 50 * level };
+            return (int)dmgs[index];
+        }
+
+        static void Smite()
+        {
+            string[] jungleMinions;
+            if (Utility.Map.GetMap()._MapType.Equals(Utility.Map.MapType.TwistedTreeline))
+            {
+                jungleMinions = new string[] { "TT_Spiderboss", "TT_NWraith", "TT_NGolem", "TT_NWolf" };
+            }
+            else
+            {
+                jungleMinions = new string[] { "AncientGolem", "LizardElder", "Worm", "Dragon" };
+            }
+
+            var minions = MinionManager.GetMinions(Player.Position, 1000, MinionTypes.All, MinionTeam.Neutral);
+            if (minions.Count() > 0)
+            {
+                int smiteDmg = getSmiteDmg();
+                foreach (Obj_AI_Base minion in minions)
+                {
+
+                    Boolean b;
+                    if (Utility.Map.GetMap()._MapType.Equals(Utility.Map.MapType.TwistedTreeline))
+                    {
+                        b = minion.Health <= smiteDmg &&
+                            jungleMinions.Any(name => minion.Name.Substring(0, minion.Name.Length - 5).Equals(name));
+                    }
+                    else
+                    {
+                        b = minion.Health <= smiteDmg && jungleMinions.Any(name => minion.Name.StartsWith(name));
+                    }
+
+                    if (b)
+                    {
+                        Player.SummonerSpellbook.CastSpell(smiteSlot.Slot, minion);
+                    }
+                }
+            }
+        }
+
+        static void ks()
+        {
+
+
+            var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
+            nearChamps.OrderBy(x => x.Health);
+
+
+            foreach (var target in nearChamps)
+            {
+                //ignite
+                if (target != null && Config.Item("useIgnite").GetValue<bool>() && igniteSlot != SpellSlot.Unknown &&
+                                Player.SummonerSpellbook.CanUseSpell(igniteSlot) == SpellState.Ready && Player.Distance(target.ServerPosition) <= 600)
+                {
+                    if (Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite) > target.Health)
+                    {
+                        Player.SummonerSpellbook.CastSpell(igniteSlot, target);
+                    }
+                }
+
+                if (Player.Distance(target.ServerPosition) <= ESpell.Range && (Player.GetSpellDamage(target, SpellSlot.E)) > target.Health)
+                {
+                    if (ESpell.IsReady())
+                    {
+                        ESpell.Cast(target, packets());
+                        return;
+                    }
+                }
+
+            }
+
+
+        }
+
+        static void Combo()
+        {
+            var target = SimpleTs.GetTarget(1500, SimpleTs.DamageType.Physical);
+
+
+            if (Config.Item("UseECombo").GetValue<bool>() && ESpell.IsReady() && target.IsValidTarget(ESpell.Range) && !LXOrbwalker.InAutoAttackRange(target)) 
+            {
+                ESpell.Cast(target, packets());
+            }
+
+            if (Config.Item("UseWCombo").GetValue<bool>() && WSpell.IsReady() && LXOrbwalker.InAutoAttackRange(target))
+            {
+                WSpell.Cast();
+            }
+            if (Config.Item("UseRCombo").GetValue<bool>() && RSpell.IsReady() && (Player.GetSpellDamage(target, SpellSlot.R)) > target.Health && target.IsValidTarget(RSpell.Range))
+            {
+                RSpell.Cast();
+            }
+
+            UseItemes(target);
+        }
+
+        static void LaneClear()
+        {
+            var minion = MinionManager.GetMinions(Player.ServerPosition, ESpell.Range,
+                MinionTypes.All,
+                MinionTeam.NotAlly, MinionOrderTypes.MaxHealth);
+            
+            if(minion.Count > 0){
+                 var minions = minion[0];
+             if (Config.Item("UseQLaneClear").GetValue<bool>() && QSpell.IsReady() && minions.IsValidTarget(QSpell.Range))
+             {
+                 QSpell.Cast();
+             }
+
+             if (Config.Item("UseWLaneClear").GetValue<bool>() && WSpell.IsReady() && LXOrbwalker.InAutoAttackRange(minions))
+             {
+                 WSpell.Cast();
+             }
+             if (Config.Item("UseELaneClear").GetValue<bool>() && ESpell.IsReady() && minions.IsValidTarget(ESpell.Range) )
+             {
+                 ESpell.Cast(minions, packets());
+             }
+        }
+
+        }
+
+       /* ADD later LX Still Bug :(
+        * 
+        * static void Flee()
+        {
+
+        }*/
+
 
       
-        private static void DoCombo()
+        private static void UseItemes(Obj_AI_Hero target)
         {
-            var target = SimpleTs.GetTarget(ESpell.Range, SimpleTs.DamageType.Magical);
-            if (target == null) return;
+            var iBilge = Config.Item("Bilge").GetValue<bool>();
+            var iBilgeEnemyhp = target.Health <=
+                                (target.MaxHealth * (Config.Item("BilgeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBilgemyhp = Player.Health <=
+                             (Player.MaxHealth * (Config.Item("Bilgemyhp").GetValue<Slider>().Value) / 100);
+            var iBlade = Config.Item("Blade").GetValue<bool>();
+            var iBladeEnemyhp = target.Health <=
+                                (target.MaxHealth * (Config.Item("BladeEnemyhp").GetValue<Slider>().Value) / 100);
+            var iBlademyhp = Player.Health <=
+                             (Player.MaxHealth * (Config.Item("Blademyhp").GetValue<Slider>().Value) / 100);
+            var iOmen = Config.Item("Omen").GetValue<bool>();
+            var iOmenenemys = ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(450)) >=
+                              Config.Item("Omenenemys").GetValue<Slider>().Value;
+            var iTiamat = Config.Item("Tiamat").GetValue<bool>();
+            var iHydra = Config.Item("Hydra").GetValue<bool>();
+            var ilotis = Config.Item("lotis").GetValue<bool>();
+            //var ihp = Config.Item("Hppotion").GetValue<bool>();
+            // var ihpuse = Player.Health <= (Player.MaxHealth * (Config.Item("Hppotionuse").GetValue<Slider>().Value) / 100);
+            //var imp = Config.Item("Mppotion").GetValue<bool>();
+            //var impuse = Player.Health <= (Player.MaxHealth * (Config.Item("Mppotionuse").GetValue<Slider>().Value) / 100);
 
-                if (ESpell.IsReady() && Player.Distance(target) < ESpell.Range)
-                    ESpell.CastOnUnit(target);
-
-                if (Tiamat.IsReady() && Player.Distance(target) < Tiamat.Range)
-                    Tiamat.Cast();
-
-                if (Hydra.IsReady() && Player.Distance(target) < Hydra.Range)
-                    Hydra.Cast();
-
-                if (QSpell.IsReady() && Player.Distance(target) < QSpell.Range)
-                    QSpell.Cast(Player);
-
-                if (WSpell.IsReady() && Player.Distance(target) < WSpell.Range)
-                    WSpell.Cast(Player);
-
-                if (RSpell.IsReady() && Player.Distance(target) < RSpell.Range)
-                    RSpell.Cast();
-
-                /*if (IgniteSlot != SpellSlot.Unknown && Player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)  // 
-                    ObjectManager.Player.SummonerSpellbook.CastSpell(IgniteSlot, target);*/
-
-          
-        }
-
-        private static void DoHarass()
-        {
-            var target = SimpleTs.GetTarget(ESpell.Range, SimpleTs.DamageType.Magical);
-            if (target == null) return;
-
-           
-                if (ESpell.IsReady() && Player.Distance(target) < ESpell.Range)
-                    ESpell.CastOnUnit(target);
-
-                if (Tiamat.IsReady() && Player.Distance(target) < Tiamat.Range)
-                    Tiamat.Cast();
-
-                if (Hydra.IsReady() && Player.Distance(target) < Hydra.Range)
-                    Hydra.Cast();
-
-                if (QSpell.IsReady() && Player.Distance(target) < QSpell.Range)
-                    QSpell.Cast(Player);
-
-                if (WSpell.IsReady() && Player.Distance(target) < WSpell.Range)
-                    WSpell.Cast(Player);
-
-        }
-
-        private static void DoLaneClear()
-        {
-            //Find All Minion
-            var allMinions = MinionManager.GetMinions(Player.ServerPosition, ESpell.Range,
-                MinionTypes.All, MinionTeam.NotAlly);
-            var jungleMinions = MinionManager.GetMinions(Player.ServerPosition, ESpell.Range, MinionTypes.All, MinionTeam.Neutral);
-            allMinions.AddRange(jungleMinions);
-
-            //Q
-            if (Config.Item("UseQLaneClear").GetValue<bool>() && QSpell.IsReady() && allMinions.Count > 0)
+            if (Player.Distance(target) <= 450 && iBilge && (iBilgeEnemyhp || iBilgemyhp) && bilge.IsReady())
             {
-                QSpell.Cast(Player);
+                bilge.Cast(target);
+
             }
-
-            //W
-            if (Config.Item("UseWLaneClear").GetValue<bool>() && WSpell.IsReady() && allMinions.Count > 0)
+            if (Player.Distance(target) <= 450 && iBlade && (iBladeEnemyhp || iBlademyhp) && blade.IsReady())
             {
-                WSpell.Cast(Player);
+                blade.Cast(target);
+
             }
-
-            //E
-            if (Config.Item("UseELaneClear").GetValue<bool>() && ESpell.IsReady() && allMinions.Count > 0)
+            if (Utility.CountEnemysInRange(350) >= 1 && iTiamat && tiamat.IsReady())
             {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()))
+                tiamat.Cast();
+
+            }
+            if (Utility.CountEnemysInRange(350) >= 1 && iHydra && hydra.IsReady())
+            {
+                hydra.Cast();
+
+            }
+            if (iOmenenemys && iOmen && rand.IsReady())
+            {
+                rand.Cast();
+
+            }
+            if (ilotis)
+            {
+                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly || hero.IsMe))
                 {
-                    if(ESpell.IsReady())
-                        ESpell.Cast(minion);
+                    if (hero.Health <= (hero.MaxHealth * (Config.Item("lotisminhp").GetValue<Slider>().Value) / 100) &&
+                        hero.Distance(Player.ServerPosition) <= lotis.Range && lotis.IsReady())
+                        lotis.Cast();
                 }
             }
-            if (Config.Item("AutoTiamat").GetValue<bool>() && Tiamat.IsReady() && allMinions.Count > 0)
-            {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()))
-                {
-                    if (Tiamat.IsReady() && Tiamat.Range > Player.Distance(minion))
-                        Tiamat.Cast();
-                }
-
-            }
-            if (Config.Item("AutoTiamat").GetValue<bool>() && Hydra.IsReady() && allMinions.Count > 0)
-            {
-                foreach (var minion in allMinions.Where(minion => minion.IsValidTarget()))
-                {
-                    if (Hydra.IsReady() && Hydra.Range > Player.Distance(minion))
-                        Hydra.Cast();
-                }
-
-            }
-
-
         }
+   
+    
+    
     }
+
 }
