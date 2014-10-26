@@ -20,12 +20,13 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -38,16 +39,16 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LeagueSharp">
+    <Reference Include="LeagueSharp, Version=1.0.0.25, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\XenoCoreZ\Downloads\LeagueSharp\\System\LeagueSharp.dll</HintPath>
     </Reference>
-    <Reference Include="LeagueSharp.Common">
+    <Reference Include="LeagueSharp.Common, Version=1.0.0.4, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\XenoCoreZ\Downloads\LeagueSharp\\System\LeagueSharp.Common.dll</HintPath>
     </Reference>
-    <Reference Include="LX-Orbwalker">
-      <HintPath>C:\Users\XenoCoreZ\Downloads\LeagueSharp\\System\LX-Orbwalker.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX">
+    <Reference Include="SharpDX, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Users\XenoCoreZ\Downloads\LeagueSharp\\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -60,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LXOrbwalker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

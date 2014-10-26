@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
-using LX_Orbwalker;
+
 
 namespace AlienHack_YiSharp
 {
@@ -62,7 +62,7 @@ namespace AlienHack_YiSharp
             Config.SubMenu("LaneClear").AddItem(new MenuItem("UseQLaneClear", "Use Q").SetValue(true));
             Config.SubMenu("LaneClear")
                 .AddItem(
-                    new MenuItem("LaneClearActive", "LaneClear!").SetValue(
+                    new MenuItem("LaneClear_Key", "LaneClear!").SetValue(
                         new KeyBind(Config.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
             //Harass menu:
@@ -71,7 +71,7 @@ namespace AlienHack_YiSharp
             Config.SubMenu("Harass").AddItem(new MenuItem("UseEHarass", "Use E").SetValue(false));
             Config.SubMenu("Harass")
                 .AddItem(
-                    new MenuItem("HarassActive", "Harass!").SetValue(
+                    new MenuItem("Harass_Key", "Harass!").SetValue(
                         new KeyBind(Config.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
             //Combo menu:
@@ -84,7 +84,7 @@ namespace AlienHack_YiSharp
             Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
             Config.SubMenu("Combo")
                 .AddItem(
-                    new MenuItem("ComboActive", "Combo!").SetValue(
+                    new MenuItem("Combo_Key", "Combo!").SetValue(
                         new KeyBind(Config.Item("Orbwalk").GetValue<KeyBind>().Key, KeyBindType.Press)));
 
             Config.AddSubMenu(new Menu("Misc", "Misc"));
