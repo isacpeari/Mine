@@ -36,6 +36,7 @@ namespace AlienHack_YiSharp
             W = new Spell(SpellSlot.W, float.MaxValue);
             E = new Spell(SpellSlot.E, 525);
             R = new Spell(SpellSlot.R, 900);
+
             SpellList.Add(Q);
             SpellList.Add(W);
             SpellList.Add(E);
@@ -307,13 +308,28 @@ namespace AlienHack_YiSharp
                                         .Extend(ObjectManager.Player.ServerPosition.To2D(),
                                             -300)
                                         .To3D())
-                                    .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
+                                    .HasFlag(CollisionFlags.Wall) || 
+                                    NavMesh.GetCollisionFlags(
                                         prediction.UnitPosition.To2D()
                                             .Extend(ObjectManager.Player.ServerPosition.To2D(),
                                                 -(300 / 2))
                                             .To3D())
-                                        .HasFlag(CollisionFlags.Wall)
-                                select hero)
+                                        .HasFlag(CollisionFlags.Wall)||
+                                        NavMesh.GetCollisionFlags(
+                                        prediction.UnitPosition.To2D()
+                                            .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                                -(300))
+                                            .To3D())
+                                        .HasFlag(CollisionFlags.Building)||
+                                        NavMesh.GetCollisionFlags(
+                                        prediction.UnitPosition.To2D()
+                                            .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                                -(300 / 2))
+                                            .To3D())
+                                        .HasFlag(CollisionFlags.Building)
+                                select hero) 
+
+
                 {
                     E.Cast(hero);
                 }
