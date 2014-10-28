@@ -4,14 +4,11 @@ using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
 using LX_Orbwalker;
-using SharpDX;
 
 namespace AlienHack_YiSharp
 {
     internal class Program
     {
-        public static Orbwalking.Orbwalker Orbwalker;
-
         public static Spell Q, W, E, R;
         public static List<Spell> SpellList = new List<Spell>();
         public static Obj_AI_Hero Player = ObjectManager.Player, TargetObj = null;
@@ -81,7 +78,7 @@ namespace AlienHack_YiSharp
             //Misc
             Config.AddSubMenu(new Menu("Misc", "Misc"));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK",  "Auto BOTRK").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
@@ -92,18 +89,21 @@ namespace AlienHack_YiSharp
             Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
             LXOrbwalker.AfterAttack += AfterAttack;
-            
         }
 
         private static void AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
         {
-            if (unit.IsMe && IsTiamat() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) && target.IsValidTarget(Tiamat.Range))
+            if (unit.IsMe && IsTiamat() &&
+                (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) &&
+                target.IsValidTarget(Tiamat.Range))
             {
                 Tiamat.Cast();
                 LXOrbwalker.ResetAutoAttackTimer();
             }
 
-            if (unit.IsMe && IsHydra() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) && target.IsValidTarget(Hydra.Range))
+            if (unit.IsMe && IsHydra() &&
+                (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) &&
+                target.IsValidTarget(Hydra.Range))
             {
                 Hydra.Cast();
                 LXOrbwalker.ResetAutoAttackTimer();
@@ -117,14 +117,14 @@ namespace AlienHack_YiSharp
             }*/
         }
 
-        static void Ks()
+        private static void Ks()
         {
-
-
-            var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
+            List<Obj_AI_Hero> nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>()
+                where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy
+                select champ).ToList();
             nearChamps.OrderBy(x => x.Health);
 
-            foreach (var target in nearChamps)
+            foreach (Obj_AI_Hero target in nearChamps)
             {
                 //ignite
                 if (target != null && IsIgnite() && Player.Distance(target.ServerPosition) <= 600)
@@ -135,14 +135,14 @@ namespace AlienHack_YiSharp
                     }
                 }
 
-                if (Player.Distance(target.ServerPosition) <= Q.Range && (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health)
+                if (Player.Distance(target.ServerPosition) <= Q.Range &&
+                    (Player.GetSpellDamage(target, SpellSlot.Q)) > target.Health)
                 {
                     if (Q.IsReady())
                     {
                         Q.Cast(target);
                     }
                 }
-
             }
         }
 
@@ -254,6 +254,7 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
+
         private static bool IsWCombo()
         {
             if (Config.Item("UseWCombo").GetValue<bool>())
@@ -283,7 +284,6 @@ namespace AlienHack_YiSharp
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-
             switch (LXOrbwalker.CurrentMode)
             {
                 case LXOrbwalker.Mode.LaneClear:
@@ -332,7 +332,7 @@ namespace AlienHack_YiSharp
 
             if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
-                if (Player.Health <= Player.MaxHealth - target.MaxHealth * 0.1)
+                if (Player.Health <= Player.MaxHealth - target.MaxHealth*0.1)
                 {
                     BladeOfRuinKing.Cast(target);
                 }
@@ -380,7 +380,6 @@ namespace AlienHack_YiSharp
             {
                 Hydra.Cast();
             }*/
-
         }
 
         private static void DoLaneClear()
