@@ -81,7 +81,7 @@ namespace AlienHack_YiSharp
             //Misc
             Config.AddSubMenu(new Menu("Misc", "Misc"));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
-            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK",  "Auto BOTRK").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
@@ -91,6 +91,30 @@ namespace AlienHack_YiSharp
 
             Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
+            LXOrbwalker.AfterAttack += AfterAttack;
+            
+        }
+
+        private static void AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+        {
+            if (unit.IsMe && IsTiamat() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) && target.IsValidTarget(Tiamat.Range))
+            {
+                Tiamat.Cast();
+                LXOrbwalker.ResetAutoAttackTimer();
+            }
+
+            if (unit.IsMe && IsHydra() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) && target.IsValidTarget(Hydra.Range))
+            {
+                Hydra.Cast();
+                LXOrbwalker.ResetAutoAttackTimer();
+            }
+
+            /*if (unit.IsMe && IsWCombo() && LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo && target.IsValidTarget(W.Range))
+            {
+                W.Cast();
+                LXOrbwalker.ResetAutoAttackTimer();
+                Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
+            }*/
         }
 
         static void Ks()
@@ -296,7 +320,7 @@ namespace AlienHack_YiSharp
                 R.Cast();
             }
 
-            if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
+            /*if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
             {
                 Tiamat.Cast();
             }
@@ -304,7 +328,7 @@ namespace AlienHack_YiSharp
             if (IsHydra() && Hydra.Range >= Player.Distance(target))
             {
                 Hydra.Cast();
-            }
+            }*/
 
             if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
@@ -347,7 +371,7 @@ namespace AlienHack_YiSharp
                 E.Cast();
             }
 
-            if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
+            /*if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
             {
                 Tiamat.Cast();
             }
@@ -355,7 +379,7 @@ namespace AlienHack_YiSharp
             if (IsHydra() && Hydra.Range >= Player.Distance(target))
             {
                 Hydra.Cast();
-            }
+            }*/
 
         }
 
