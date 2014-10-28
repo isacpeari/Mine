@@ -297,7 +297,7 @@ namespace AlienHack_YiSharp
                 W.Cast();
             }
 
-            if (IsECombo() && E.Range >= Player.Distance(target))
+            if (IsECombo())
             {
                 //from vayne markmans
                 foreach (
