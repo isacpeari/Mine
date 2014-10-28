@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dunkmaster_Darius</RootNamespace>
-    <AssemblyName>Dunkmaster Darius</AssemblyName>
+    <AssemblyName>AlienHack Dunkmaster Darius</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PreBuildEvent />
