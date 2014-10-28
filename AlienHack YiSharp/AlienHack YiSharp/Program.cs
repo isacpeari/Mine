@@ -4,6 +4,7 @@ using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
 using LX_Orbwalker;
+using SharpDX;
 
 namespace AlienHack_YiSharp
 {
@@ -71,10 +72,11 @@ namespace AlienHack_YiSharp
             Config.AddSubMenu(new Menu("Combo", "Combo"));
             //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
             Config.SubMenu("Combo")
-                .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(600, 0, 600)));
+                .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(0, 0, 600)));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
+            //Config.SubMenu("Combo").AddItem(new MenuItem("UseWCombo", "W AA Cancel").SetValue(true));
 
             //Misc
             Config.AddSubMenu(new Menu("Misc", "Misc"));
@@ -89,7 +91,6 @@ namespace AlienHack_YiSharp
 
             Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
-
         }
 
         static void Ks()
@@ -98,7 +99,6 @@ namespace AlienHack_YiSharp
 
             var nearChamps = (from champ in ObjectManager.Get<Obj_AI_Hero>() where Player.Distance(champ.ServerPosition) <= 600 && champ.IsEnemy select champ).ToList();
             nearChamps.OrderBy(x => x.Health);
-
 
             foreach (var target in nearChamps)
             {
@@ -116,13 +116,10 @@ namespace AlienHack_YiSharp
                     if (Q.IsReady())
                     {
                         Q.Cast(target);
-                        return;
                     }
                 }
 
             }
-
-
         }
 
 
@@ -233,6 +230,14 @@ namespace AlienHack_YiSharp
             }
             return false;
         }
+        private static bool IsWCombo()
+        {
+            if (Config.Item("UseWCombo").GetValue<bool>())
+            {
+                return W.IsReady();
+            }
+            return false;
+        }
 
         private static bool IsECombo()
         {
@@ -318,6 +323,13 @@ namespace AlienHack_YiSharp
             {
                 Youmuu.Cast();
             }
+
+            //if (IsWCombo() && LXOrbwalker)
+            //{
+            //    W.Cast();
+            //    Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
+            //    LXOrbwalker.ResetAutoAttackTimer();
+            //}
         }
 
         private static void DoHarass()

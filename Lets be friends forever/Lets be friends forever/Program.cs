@@ -241,6 +241,7 @@ namespace Lets_be_friends_forever
 
         }
 
+		//Daibaths
         static void Smite()
         {
             string[] jungleMinions;
@@ -287,6 +288,7 @@ namespace Lets_be_friends_forever
             return (int)dmgs[index];
         }
 
+		//Daibaths
         private static void UseItemes(Obj_AI_Hero target)
         {
             var iOmen = Config.Item("Omen").GetValue<bool>();

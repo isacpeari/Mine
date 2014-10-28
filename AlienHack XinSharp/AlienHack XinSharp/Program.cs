@@ -216,6 +216,7 @@ namespace AlienHack_XinSharp
 
         }
 
+		
         private static int getSmiteDmg()
         {
             int level = Player.Level;
@@ -224,6 +225,7 @@ namespace AlienHack_XinSharp
             return (int)dmgs[index];
         }
 
+		//Daibaths
         static void Smite()
         {
             string[] jungleMinions;
@@ -351,7 +353,7 @@ namespace AlienHack_XinSharp
         }*/
 
 
-      
+      //Daibaths
         private static void UseItemes(Obj_AI_Hero target)
         {
             var iBilge = Config.Item("Bilge").GetValue<bool>();
