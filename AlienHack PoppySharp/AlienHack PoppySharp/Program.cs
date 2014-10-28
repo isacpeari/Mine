@@ -309,7 +309,7 @@ namespace AlienHack_YiSharp
             {
                 //from vayne markmans
                 foreach (
-                    /*var hero in from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(525f))
+                    var hero in from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(525f))
                                 let prediction = E.GetPrediction(hero)
                                 where NavMesh.GetCollisionFlags(
                                     prediction.UnitPosition.To2D()
@@ -323,13 +323,8 @@ namespace AlienHack_YiSharp
                                                 -(300 / 2))
                                             .To3D())
                                         .HasFlag(CollisionFlags.Wall)
-                                select hero*/
-                    var hero in from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(525f))
-                                let prediction = E.GetPrediction(hero)
-                                where NavMesh.GetCollisionFlags(
-                                    prediction.UnitPosition)
-                                    .HasFlag(CollisionFlags.Wall)
-                                select hero) 
+                                select hero
+                    ) 
 
 
                 {
