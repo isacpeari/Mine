@@ -11,6 +11,7 @@ namespace Dunkmaster_Darius
     class Program
     {
 
+	//Some of the source are taken from Daibaths and TC-Crew
         public static Menu Config;
         public static Spell Q;
         public static Spell W;
