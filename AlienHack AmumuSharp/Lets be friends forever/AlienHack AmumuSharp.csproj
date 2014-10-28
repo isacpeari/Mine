@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lets_be_friends_forever</RootNamespace>
-    <AssemblyName>Alien Amumu Lets be friends forever</AssemblyName>
+    <AssemblyName>AlienHack AmumuSharp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PreBuildEvent />
