@@ -1,6 +1,6 @@
-﻿+﻿// Amumu Friend Forver By NongNoobJung && AlienHack
-+//Item Logic Credit to diabaths
-+using System;
+﻿// Amumu Friend Forver By NongNoobJung && AlienHack
+//Item Logic Credit to diabaths
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -184,7 +184,7 @@ namespace Lets_be_friends_forever
 
             if (Q.GetPrediction(target).Hitchance >= getHit() && Player.Distance(target) < Q.Range && Config.Item("UseQCombo").GetValue<bool>() && Q.IsReady())
             {
-               Q.Cast(qPred.CastPosition, Packets());
+                Q.Cast(qPred.CastPosition, Packets());
             }
 
             if (W.IsReady() && W.Instance.ToggleState == 1 && Player.Distance(target) < 300 && Config.Item("UseWCombo").GetValue<bool>())
@@ -243,7 +243,6 @@ namespace Lets_be_friends_forever
 
         }
 
-		//Daibaths
         static void Smite()
         {
             string[] jungleMinions;
@@ -290,7 +289,6 @@ namespace Lets_be_friends_forever
             return (int)dmgs[index];
         }
 
-		//Daibaths
         private static void UseItemes(Obj_AI_Hero target)
         {
             var iOmen = Config.Item("Omen").GetValue<bool>();
