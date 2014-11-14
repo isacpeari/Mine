@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
@@ -67,54 +68,71 @@ namespace AlienHack_YiSharp
 
             //Combo menu:
             Config.AddSubMenu(new Menu("Combo", "Combo"));
-            //Config.AddItem(new MenuItem("MinQRange", "Min Q range").SetValue(new Slider(600, 0, 600)));
-            Config.SubMenu("Combo")
-                .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(0, 0, 600)));
+            Config.SubMenu("Combo").AddItem(new MenuItem("SelectedTarget", "Focus Selected Target").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseECombo", "Use E").SetValue(true));
             Config.SubMenu("Combo").AddItem(new MenuItem("UseRCombo", "Use R").SetValue(true));
-            //Config.SubMenu("Combo").AddItem(new MenuItem("UseWCombo", "W AA Cancel").SetValue(true));
+            Config.SubMenu("Combo").AddItem(new MenuItem("UseWCombo", "W AA Cancel").SetValue(true));
 
             //Misc
             Config.AddSubMenu(new Menu("Misc", "Misc"));
+            Config.SubMenu("Misc")
+                .AddItem(new MenuItem("MinQRange", "Min Q Range").SetValue(new Slider(0, 0, 600)));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoTiamat", "Auto Tiamat").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoBOTRK", "Auto BOTRK").SetValue(true));
+            Config.SubMenu("Misc").AddItem(new MenuItem("GapBOTRK", "BOTRK/Bilge Only for Gapcloser").SetValue(true));
+            Config.SubMenu("Misc")
+                .AddItem(new MenuItem("MinBOTRK", "BOTRK Health < x%").SetValue(new Slider(0, 0, 100)));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoYoumuu", "Auto Youmuu").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoIgnite", "Auto Ignite").SetValue(true));
             Config.SubMenu("Misc").AddItem(new MenuItem("AutoQSteal", "Auto Q Steal").SetValue(true));
+
+            //Draw
+            Config.AddSubMenu(new Menu("Draw", "Draw"));
+            Config.SubMenu("Draw").AddItem(new MenuItem("QRange", "Q range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
 
             Config.AddToMainMenu();
             // End Menu
 
             Game.PrintChat("AlienHack [YiSharp - WujuMaster] Loaded!");
             Game.OnGameUpdate += Game_OnGameUpdate;
+            Drawing.OnDraw += Drawing_OnDraw;
             LXOrbwalker.AfterAttack += AfterAttack;
+        }
+
+        private static void Drawing_OnDraw(EventArgs args)
+        {
+            var menuItem = Config.Item("QRange").GetValue<Circle>();
+            if (menuItem.Active) {
+                Utility.DrawCircle(Player.Position, getQRange(), Color.Red);
+                Utility.DrawCircle(Player.Position, Q.Range, Color.Cyan);
+            }
         }
 
         private static void AfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
         {
-            if (unit.IsMe && IsTiamat() &&
-                (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) &&
+            if (!unit.IsMe || target.IsMinion)
+                return;
+
+            if (IsTiamat() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) &&
                 target.IsValidTarget(Tiamat.Range))
             {
                 Tiamat.Cast();
                 LXOrbwalker.ResetAutoAttackTimer();
             }
 
-            if (unit.IsMe && IsHydra() &&
-                (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) &&
-                target.IsValidTarget(Hydra.Range))
+            if (IsHydra() && (LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo || LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Harass) && target.IsValidTarget(Hydra.Range))
             {
                 Hydra.Cast();
                 LXOrbwalker.ResetAutoAttackTimer();
             }
 
-            /*if (unit.IsMe && IsWCombo() && LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo && target.IsValidTarget(W.Range))
+            if (IsWCombo() && LXOrbwalker.CurrentMode == LXOrbwalker.Mode.Combo && LXOrbwalker.InAutoAttackRange(target))
             {
                 W.Cast();
+                Utility.DelayAction.Add(100, () => Player.IssueOrder(GameObjectOrder.AttackTo, target));
                 LXOrbwalker.ResetAutoAttackTimer();
-                Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
-            }*/
+            }
         }
 
         private static void Ks()
@@ -150,6 +168,16 @@ namespace AlienHack_YiSharp
         private static int getQRange()
         {
             return Config.Item("MinQRange").GetValue<Slider>().Value;
+        }
+
+        private static int getBOTKRPercent()
+        {
+            return Config.Item("MinBOTRK").GetValue<Slider>().Value;
+        }
+
+        private static bool getBOTRKGap()
+        {
+            return Config.Item("GapBOTRK").GetValue<bool>();
         }
 
         private static bool IsQSteal()
@@ -302,7 +330,13 @@ namespace AlienHack_YiSharp
 
         private static void DoCombo()
         {
+            var focusSelected = Config.Item("SelectedTarget").GetValue<bool>();
             Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
+
+            if (SimpleTs.GetSelectedTarget() != null)
+                if (focusSelected && SimpleTs.GetSelectedTarget().Distance(Player.ServerPosition) < Q.Range)
+                    target = SimpleTs.GetSelectedTarget();
+
             if (target == null) return;
 
             if (IsQCombo() && Player.Distance(target) >= getQRange())
@@ -320,40 +354,39 @@ namespace AlienHack_YiSharp
                 R.Cast();
             }
 
-            /*if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
-            {
-                Tiamat.Cast();
-            }
-
-            if (IsHydra() && Hydra.Range >= Player.Distance(target))
-            {
-                Hydra.Cast();
-            }*/
-
             if (IsBOTRK() && BladeOfRuinKing.Range >= Player.Distance(target))
             {
-                if (Player.Health <= Player.MaxHealth - target.MaxHealth*0.1)
+                if (getBOTRKGap())
                 {
-                    BladeOfRuinKing.Cast(target);
+                    if (!LXOrbwalker.InAutoAttackRange(target))
+                        BladeOfRuinKing.Cast(target);
+                }
+                else
+                {
+                    if ((Player.Health/Player.MaxHealth)*100 <= getBOTKRPercent())
+                    {
+                        BladeOfRuinKing.Cast(target);
+                    }
                 }
             }
 
             if (IsBilge() && BlidgeWater.Range >= Player.Distance(target))
             {
-                BlidgeWater.Cast(target);
+                if (getBOTRKGap())
+                {
+                    if (!LXOrbwalker.InAutoAttackRange(target))
+                        BlidgeWater.Cast(target);
+                }
+                else
+                {
+                    BlidgeWater.Cast(target);
+                }
             }
 
             if (IsYoumuu() && Youmuu.Range >= Player.Distance(target))
             {
                 Youmuu.Cast();
             }
-
-            //if (IsWCombo() && LXOrbwalker)
-            //{
-            //    W.Cast();
-            //    Player.IssueOrder(GameObjectOrder.MoveTo, target.ServerPosition);
-            //    LXOrbwalker.ResetAutoAttackTimer();
-            //}
         }
 
         private static void DoHarass()
@@ -361,7 +394,7 @@ namespace AlienHack_YiSharp
             Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
             if (target == null) return;
 
-            if (IsQHarass() && Q.Range >= Player.Distance(target))
+            if (IsQHarass() && Player.Distance(target) >= getQRange())
             {
                 Q.Cast(target);
             }
@@ -370,16 +403,6 @@ namespace AlienHack_YiSharp
             {
                 E.Cast();
             }
-
-            /*if (IsTiamat() && Tiamat.Range >= Player.Distance(target))
-            {
-                Tiamat.Cast();
-            }
-
-            if (IsHydra() && Hydra.Range >= Player.Distance(target))
-            {
-                Hydra.Cast();
-            }*/
         }
 
         private static void DoLaneClear()
