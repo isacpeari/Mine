@@ -330,6 +330,7 @@ namespace AlienHack_YiSharp
 
         private static void DoCombo()
         {
+		//xSalice for target selector
             var focusSelected = Config.Item("SelectedTarget").GetValue<bool>();
             Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Physical);
 
